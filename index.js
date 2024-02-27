@@ -26,6 +26,7 @@ app.use(bodyParser.json())
 
 //API routes here 
 app.use('/api/predict', require('./routes/predict'))
+app.use('/api/predict_gemini', require('./routes/gemini'))
 // app.use('/api/image', require('./middlewares/multer').router)
 // app.use('/api/client', require('./routes/client'))
 // app.use('/api/worker', require('./routes/worker'))
