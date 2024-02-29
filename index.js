@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 var bodyParser = require('body-parser');
 // const User = require('./schemas/Userschema')
-// const cors = require('cors')
+const cors = require('cors')
 // const passport = require("passport");
 // const { initializingPassport } = require('./middlewares/passportConfig');
 // const expressSession = require('express-session')
@@ -12,7 +12,7 @@ var bodyParser = require('body-parser');
 // ConnectionDB();
 
 // app.use(express.json());
-// app.use(cors())
+app.use(cors())
 // app.use(express.urlencoded({extended: true}))
 // app.use(expressSession({ secret:"secret", resave:false, saveUninitialized:false }));
 // app.use(passport.initialize());
