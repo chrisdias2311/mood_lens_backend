@@ -8,7 +8,7 @@ const emotionsSchema = mongoose.Schema({
     excited: Number
 }, { _id : false });
 
-const studentReportSchema = mongoose.Schema({
+const meetingTimestampsSchema = mongoose.Schema({
     meet_id:{
         type: Number,
     },
@@ -29,4 +29,4 @@ const studentReportSchema = mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('Student_Report', studentReportSchema);
+module.exports = mongoose.model('Meeting_Timestamps', meetingTimestampsSchema);
