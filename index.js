@@ -3,13 +3,14 @@ const app = express();
 var bodyParser = require('body-parser');
 // const User = require('./schemas/Userschema')
 const cors = require('cors')
+const ConnectionDB = require("./database");
 // const passport = require("passport");
 // const { initializingPassport } = require('./middlewares/passportConfig');
 // const expressSession = require('express-session')
 // const jwt = require("jsonwebtoken")
 
 
-// ConnectionDB();
+ConnectionDB();
 
 // app.use(express.json());
 app.use(cors())

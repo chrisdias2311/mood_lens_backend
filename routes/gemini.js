@@ -161,6 +161,50 @@ function imageDataToGenerativePart(data, mimeType) {
         },
     };
 }
+
+const prompt = `Analyze the following image and identify the student's most likely emotion: 
+    if any of the following scenarios are seen in the image {
+        Smiling, 
+        Bright Eyes, 
+        Relaxed Facial Muscles, 
+        Raised Cheeks, 
+        Engagement, 
+        Positive Body Language
+    } the student is happy.
+
+    If any of the following scenarios are seen in the image {
+        Raised Eyebrows, 
+        Open Mouth, 
+        Wide Eyes, 
+        Shocked Expression, 
+        Surprise, 
+        Heightened alertness.
+    } the student is surprised.
+
+    If any of the following scenarios are seen in the image {
+        Furrowed Brows, 
+        Squinting, 
+        Frowning, 
+        Confused Expression, 
+        Discomfort, 
+        Tension.
+    } the student is confused.
+
+    If any of the following scenarios are seen in the image {
+        Blank or Distant Look,
+        Heavy-Lidded Eyes,
+        Yawning or Sighing, 
+        Slumped Posture, 
+        Closed Eyes, 
+        Fidgeting, 
+        Disengagement, 
+        Negative Body Language.
+    } the student is bored. 
+    (Choose from: Surprised, Confused, Happy, Bored).
+    Give the Answer in one word which is the most likely emotion.
+`;
+
+
 async function ImageToEmotion(studentPID, imageUrl) {
     const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
     const prompt = "Imagine that you are a teacher and you have a few students in the class. You will receive an image of a student who is sitting in a virtual Classroom for your lecture. You have to identify the emotion of that student. The emotion should be among these four classes {Surprised, Confused, Happy, Bored}. Please give the response In one word which is the emotion class";
