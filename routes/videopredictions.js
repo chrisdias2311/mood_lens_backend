@@ -158,7 +158,7 @@ async function ImagesToEmotions(meet_id, host_id, imgUrls) {
         // Update meeting report
         await updateMeetingReport(meet_id, host_id, finalEmotion);
         // Update student report
-        await updateStudentReport(meet_id, studentPID, finalEmotion);
+        updateStudentReport(meet_id, studentPID, finalEmotion);
         emotions.push(emotionData);
     }
     return emotions;
@@ -250,22 +250,35 @@ function countEmotions(emotions) {
     }
     return counts;
 }
-async function createMeetingTimestamp(meet_id, host_id, timeStamp, emotionCounts) {
-    // Calculate report_no as the length of entries in the meeting reports which have meet_id = current meeting id
-    const report_no = await MeetingTimestamp.countDocuments({ meet_id: meet_id , modeType: "video"});
 
-    // Create a new MeetingTimestamp
-    const newMeetingTimestamp = new MeetingTimestamp({
-        meet_id: meet_id,
-        host_id: host_id,
+async function createMeetingTimestamp(meet_id, host_id, timeStamp, emotionCounts) {
+    // Find the meeting timestamp document for the current meeting id and modeType
+    let meetingTimestamp = await MeetingTimestamp.findOne({ meet_id: meet_id, modeType: "video" });
+
+    // If the document doesn't exist, create a new one
+    if (!meetingTimestamp) {
+        meetingTimestamp = new MeetingTimestamp({
+            meet_id: meet_id,
+            modeType: "video",
+            timestamps: []
+        });
+    }
+
+    // Calculate report_no as the length of the timestamps array
+    const report_no = meetingTimestamp.timestamps.length;
+
+    // Create a new timestamp
+    const newTimestamp = {
         report_no: report_no,
         timeStamp: timeStamp,
-        modeType: "video",
         emotions: [emotionCounts] // Update the emotion counts
-    });
+    };
 
-    // Save the new MeetingTimestamp
-    await newMeetingTimestamp.save();
+    // Append the new timestamp to the timestamps array
+    meetingTimestamp.timestamps.push(newTimestamp);
+
+    // Save the updated MeetingTimestamp
+    await meetingTimestamp.save();
 }
 
 
@@ -274,12 +287,23 @@ async function createMeetingTimestamp(meet_id, host_id, timeStamp, emotionCounts
 
 
 
+// async function createMeetingTimestamp(meet_id, host_id, timeStamp, emotionCounts) {
+//     // Calculate report_no as the length of entries in the meeting reports which have meet_id = current meeting id
+//     const report_no = await MeetingTimestamp.countDocuments({ meet_id: meet_id , modeType: "video"});
 
+//     // Create a new MeetingTimestamp
+//     const newMeetingTimestamp = new MeetingTimestamp({
+//         meet_id: meet_id,
+//         host_id: host_id,
+//         report_no: report_no,
+//         timeStamp: timeStamp,
+//         modeType: "video",
+//         emotions: [emotionCounts] // Update the emotion counts
+//     });
 
-
-
-
-
+//     // Save the new MeetingTimestamp
+//     await newMeetingTimestamp.save();
+// }
 
 
 
