@@ -3,9 +3,10 @@ const mongoose = require("mongoose");
 // Define a sub-schema for the emotions
 const emotionsSchema = mongoose.Schema({
     happy: Number,
-    sad: Number,
+    surprised: Number,
     confused: Number,
-    excited: Number
+    bored: Number,
+    pnf: Number,     //pnf = person not found
 }, { _id : false });
 
 const meetingTimestampsSchema = mongoose.Schema({
@@ -18,14 +19,12 @@ const meetingTimestampsSchema = mongoose.Schema({
     timeStamp: {
         type: String,
     },
-    text_emotions: {
-        type: [emotionsSchema], // Use the emotions sub-schema
+    modeType: {
+        type: String,
     },
-    video_emotions: {
+    emotions: {
         type: [emotionsSchema], // Use the emotions sub-schema
-    },
-    audio_emotions: {
-        type: [emotionsSchema], // Use the emotions sub-schema
+        default: [{ happy: 0, surprised: 0, confused: 0, bored: 0, pnf: 0 }] // Default to an empty array
     }
 });
 
