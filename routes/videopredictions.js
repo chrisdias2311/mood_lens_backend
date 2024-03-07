@@ -10,6 +10,7 @@ const https = require("https");
 const MeetingReport = require("../schemas/MeetingReportsSchema");
 const MeetingTimestamp = require("../schemas/MeetingTimestampsSchema");
 const StudentReport = require("../schemas/StudentReportSchema");
+const { update } = require('../schemas/UserSchema');
 
 
 const genAI = new GoogleGenerativeAI("AIzaSyB0TW1vcbeM8a56Uo8GT0TBriUZgDCfwdE");
@@ -97,16 +98,16 @@ router.post('/video_to_emotion', async (req, res) => {
         }
 
         // Execute the runForImages function
-        const emotions = await ImagesToEmotions(meet_id, host_id, imgUrls);
-        const emotionCounts = countEmotions(emotions);
+        const updatedMeetReports = await ImagesToEmotions(meet_id, host_id, imgUrls, time_stamp);
+        // const emotionCounts = countEmotions(emotions);
 
         // console.log(emotionCounts);
         // console.log(emotions);
 
         // Create a new MeetingTimestamp in the database
-        createMeetingTimestamp(meet_id, host_id, time_stamp, emotionCounts);     // Do not add await here, function is not critical to the response hence can be executed asynchronously to save response time 
-
-        res.json({ emotions }); // Send response as JSON
+        // createMeetingTimestamp(meet_id, host_id, time_stamp, emotionCounts);     // Do not add await here, function is not critical to the response hence can be executed asynchronously to save response time 
+        console.log(updatedMeetReports);
+        res.json({ updatedMeetReports }); // Send response as JSON
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(400).json({ error: error.message });
@@ -133,8 +134,9 @@ router.get('/video_timestamps/:meet_id', async (req, res) => {
 
 
 
-async function ImagesToEmotions(meet_id, host_id, imgUrls) {
+async function ImagesToEmotions(meet_id, host_id, imgUrls, time_stamp) {
     const emotions = [];
+    let finalMeetingReport = null;
     for (const imgData of imgUrls) {
         const { studentPID, imageUrl } = imgData;
         const emotionArr = ["happy", "confused", "surprised", "bored", "pnf"];
@@ -155,13 +157,16 @@ async function ImagesToEmotions(meet_id, host_id, imgUrls) {
             console.log("Final:", finalEmotion);
         }
 
-        // Update meeting report
-        await updateMeetingReport(meet_id, host_id, finalEmotion);
         // Update student report
         updateStudentReport(meet_id, studentPID, finalEmotion);
+        // Update meeting report
+        finalMeetingReport = await updateMeetingReport(meet_id, host_id, finalEmotion);
+
         emotions.push(emotionData);
     }
-    return emotions;
+    const emotionCounts = countEmotions(emotions);
+    createMeetingTimestamp(meet_id, host_id, time_stamp, emotionCounts); 
+    return finalMeetingReport;
 }
 
 
@@ -209,10 +214,13 @@ async function updateMeetingReport(meet_id, host_id, emotion) {
     }
 
     // Increment the existing emotion class value
-    await MeetingReport.updateOne(
+    const updatedMeetingReport = await MeetingReport.findOneAndUpdate(
         { meet_id: meet_id },
         { $inc: { [`video_emotions.0.${emotion}`]: 1 } }
     );
+    console.log("=====================================")
+    console.log("Updated:", updatedMeetingReport)
+    return updatedMeetingReport;
 }
 async function insertMeetingReport(meet_id, host_id) {
     const newMeetingReport = new MeetingReport({
