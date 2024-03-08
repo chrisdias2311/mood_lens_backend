@@ -284,6 +284,7 @@ async function createMeetingTimestamp(meet_id, host_id, timeStamp, emotionCounts
 
     // Append the new timestamp to the timestamps array
     meetingTimestamp.timestamps.push(newTimestamp);
+    console.log("MeetingTimestamp:", meetingTimestamp)
 
     // Save the updated MeetingTimestamp
     await meetingTimestamp.save();

@@ -29,6 +29,9 @@ app.use('/api/v1/video', require('./routes/videopredictions'))
 app.use('/api/v1/text', require('./routes/textpredictions'))
 app.use('/api/v1/audio', require('./routes/audiopredictions'))
 
+app.use('/api/v1/reports', require('./routes/teacher_reports'))
+app.use('/api/v1/student_reports', require('./routes/parentreports'))
+
 
 
 const PORT = 5000
