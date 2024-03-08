@@ -15,11 +15,6 @@ ConnectionDB();
 
 // app.use(express.json());
 app.use(cors())
-// app.use(express.urlencoded({extended: true}))
-// app.use(expressSession({ secret:"secret", resave:false, saveUninitialized:false }));
-// app.use(passport.initialize());
-// app.use(passport.session());
-
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -32,6 +27,8 @@ app.use('/api/predict_gemini', require('./routes/gemini'))
 
 app.use('/api/v1/video', require('./routes/videopredictions'))
 app.use('/api/v1/text', require('./routes/textpredictions'))
+app.use('/api/v1/audio', require('./routes/audiopredictions'))
+
 
 
 const PORT = 5000
