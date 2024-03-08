@@ -40,7 +40,7 @@ router.post('/meeting_report', async (req, res) => {
     }
 });
 
-router.post('/get_overall_meeting_report', async (req, res) => {
+router.post('/overall_meeting_report', async (req, res) => {
     try {
         const { meet_id } = req.body; // Extract meet_id from request body
 
