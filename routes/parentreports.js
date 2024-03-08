@@ -26,7 +26,7 @@ router.post('/meetings', async (req, res) => {
     }
 });
 
-router.post('/student_reports', async (req, res) => {
+router.post('/meeting_report', async (req, res) => {
     try {
         const { student_id, meet_id } = req.body; // Extract student_id and meet_id from request body
 
