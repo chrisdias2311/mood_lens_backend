@@ -26,4 +26,18 @@ router.post('/meetings', async (req, res) => {
     }
 });
 
+router.post('/student_reports', async (req, res) => {
+    try {
+        const { student_id, meet_id } = req.body; // Extract student_id and meet_id from request body
+
+        // Find all entries where student_id equals student_id and meet_id equals meet_id
+        const reports = await StudentReport.find({ student_id: student_id, meet_id: meet_id });
+
+        res.json({ reports }); // Send response as JSON
+    } catch (error) {
+        console.error(error); // Log the error to the console
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
