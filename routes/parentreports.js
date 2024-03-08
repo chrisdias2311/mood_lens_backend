@@ -40,4 +40,35 @@ router.post('/meeting_report', async (req, res) => {
     }
 });
 
+router.post('/get_overall_meeting_report', async (req, res) => {
+    try {
+        const { meet_id } = req.body; // Extract meet_id from request body
+
+        // Find all entries with the provided meet_id
+        const reports = await MeetingReport.find({ meet_id: meet_id });
+
+        res.json({ status: "OK", data: reports }); // Send response as JSON
+    } catch (error) {
+        console.error(error); // Log the error to the console
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.post('/get_meeting_timestamps', async (req, res) => {
+    try {
+        const { meet_id } = req.body; // Extract meet_id from request body
+
+        // Find all entries with the provided meet_id
+        const timestamps = await MeetingTimestamp.find({ meet_id: meet_id });
+
+        res.json({timestamps }); // Send response as JSON
+    } catch (error) {
+        console.error(error); // Log the error to the console
+        res.status(400).json({ error: error.message });
+    }
+});
+
+
+
+
 module.exports = router;
