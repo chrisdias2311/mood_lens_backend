@@ -153,12 +153,24 @@ const sampleTimeStampsReportFormat = `{
     Clarify and summarize: Regularly summarize the key points and encourage students to ask questions if they’re confused.
     Address PNF instances: If PNF instances are high, remind students about the importance of continuous learning and the disadvantages of missing parts of the lecture.
     We hope this report helps you in enhancing the effectiveness of your future lectures. Keep up the good work!"
-}
+}`
 
 
 
+router.post("/meetings", async (req, res) => {
+    try {
+        const reports = await MeetingReport.find({ host_id: req.body.host_id });
+        if (!reports) return res.status(400).send("No reports found for this host_id");
+
+        res.status(200).send(reports);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server error');
+    }
+});
+
+module.exports = router;
 
 
-`
 
 module.exports = router;
