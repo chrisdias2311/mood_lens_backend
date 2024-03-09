@@ -13,6 +13,26 @@ const StudentReport = require("../schemas/StudentReportSchema");
 
 
 const genAI = new GoogleGenerativeAI("AIzaSyB0TW1vcbeM8a56Uo8GT0TBriUZgDCfwdE");
+
+
+
+
+
+router.post("/meetings", async (req, res) => {
+    try {
+        const reports = await MeetingReport.find({ host_id: req.body.host_id });
+        if (!reports) return res.status(400).send("No reports found for this host_id");
+
+        res.status(200).send(reports);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server error');
+    }
+});
+
+
+
+
 async function getSampleTimeStampsReport(timestamps, sampleTimeStampsReportFormat) {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
@@ -157,19 +177,7 @@ const sampleTimeStampsReportFormat = `{
 
 
 
-router.post("/meetings", async (req, res) => {
-    try {
-        const reports = await MeetingReport.find({ host_id: req.body.host_id });
-        if (!reports) return res.status(400).send("No reports found for this host_id");
 
-        res.status(200).send(reports);
-    } catch (error) {
-        console.log(error);
-        res.status(500).send('Server error');
-    }
-});
-
-module.exports = router;
 
 
 

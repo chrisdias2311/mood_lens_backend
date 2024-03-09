@@ -47,6 +47,21 @@ const meetingReportsSchema = mongoose.Schema({
     host_id: {
         type: Number,
     },
+    title: {
+        type: String,
+    },
+    description: {
+        type: String,
+    },
+    startTime: {
+        type: String,
+    },
+    endTime:{
+        type: String,
+    },
+    host_name:{
+        type: String,
+    },
     text_emotions: {
         type: [emotionsSchema], // Use the emotions sub-schema
         default: [{ happy: 0, surprised: 0, confused: 0, bored: 0, pnf: 0 }] // Default to an empty array

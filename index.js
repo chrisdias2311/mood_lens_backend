@@ -27,11 +27,12 @@ app.use('/api/predict_gemini', require('./routes/gemini'))
 
 app.use('/api/v1/user', require('./routes/user'))
 app.use('/api/v1/teacher', require('./routes/teacher'))
+app.use('/api/v1/meeting', require('./routes/meetings'))
 app.use('/api/v1/video', require('./routes/videopredictions'))
 app.use('/api/v1/text', require('./routes/textpredictions'))
 app.use('/api/v1/audio', require('./routes/audiopredictions'))
 
-app.use('/api/v1/reports', require('./routes/teacher_reports'))
+app.use('/api/v1/teacher_reports', require('./routes/teacher_reports'))
 app.use('/api/v1/student_reports', require('./routes/parentreports'))
 
 
