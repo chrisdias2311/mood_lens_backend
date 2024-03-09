@@ -16,68 +16,68 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 
 
-router.post("/signup", async (req, res) => {
-    const saltRounds = 10;
-    try {
-        const user = await User.findOne({ pid: req.body.pid });
-        if (user) return res.status(400).send("Account already exists");
+// router.post("/signup", async (req, res) => {
+//     const saltRounds = 10;
+//     try {
+//         const user = await User.findOne({ pid: req.body.pid });
+//         if (user) return res.status(400).send("Account already exists");
 
-        // bcrypt encryption
-        bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error generating hash');
-            } else {
-                const newUser = new User({
-                    pid: req.body.pid,
-                    email: req.body.email,
-                    password: hash,
-                    disability: req.body.disability
-                });
+//         // bcrypt encryption
+//         bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
+//             if (err) {
+//                 console.log(err);
+//                 res.status(500).send('Error generating hash');
+//             } else {
+//                 const newUser = new User({
+//                     pid: req.body.pid,
+//                     email: req.body.email,
+//                     password: hash,
+//                     disability: req.body.disability
+//                 });
 
-                // save user here
-                newUser.save()
-                    .then(() => {
-                        console.log('User created');
-                        res.status(200).send(newUser);
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                        res.status(500).send('Error saving user');
-                    });
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).send('Server error');
-    }
-});
+//                 // save user here
+//                 newUser.save()
+//                     .then(() => {
+//                         console.log('User created');
+//                         res.status(200).send(newUser);
+//                     })
+//                     .catch((err) => {
+//                         console.log(err);
+//                         res.status(500).send('Error saving user');
+//                     });
+//             }
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).send('Server error');
+//     }
+// });
 
 
 
-router.post("/login", async (req, res) => {
-    try {
-        // find user by PID or email
-        const user = await User.findOne({ $or: [{ pid: req.body.pid }, { email: req.body.email }] });
-        if (!user) return res.status(400).send("Account does not exist");
+// router.post("/login", async (req, res) => {
+//     try {
+//         // find user by PID or email
+//         const user = await User.findOne({ $or: [{ pid: req.body.pid }, { email: req.body.email }] });
+//         if (!user) return res.status(400).send("Account does not exist");
 
-        // bcrypt password comparison
-        bcrypt.compare(req.body.password, user.password, (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error comparing passwords');
-            } else if (result) {
-                console.log('User logged in');
-                res.status(200).send(user);
-            } else {
-                res.status(400).send('Incorrect password');
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        res.status(500).send('Server error');
-    }
-});
+//         // bcrypt password comparison
+//         bcrypt.compare(req.body.password, user.password, (err, result) => {
+//             if (err) {
+//                 console.log(err);
+//                 res.status(500).send('Error comparing passwords');
+//             } else if (result) {
+//                 console.log('User logged in');
+//                 res.status(200).send(user);
+//             } else {
+//                 res.status(400).send('Incorrect password');
+//             }
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).send('Server error');
+//     }
+// });
 
 
 router.post("/face_id_signup", async (req, res) => {
@@ -137,6 +137,29 @@ router.post("/face_id_login", async (req, res) => {
 
         // If the images are not similar, return a response indicating so
         res.status(200).json({ message: "Face ID do not match" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+    }
+});
+
+router.post("/login", async (req, res) => {
+    try {
+        // Extract username and pid from request body
+        const { username, pid } = req.body;
+
+        if (!username || !pid) {
+            return res.status(400).send("Missing username or pid in request body");
+        }
+
+        // Find the user with the given username and pid
+        const user = await User.findOne({ userName: username, pid: pid });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // If the user is found, return the user information
+        res.status(200).json({ user });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal server error");
