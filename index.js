@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 var bodyParser = require('body-parser');
-const userRoutes = require('./routes/user');
+// const userRoutes = require('./routes/user');
 // const User = require('./schemas/Userschema')
 const cors = require('cors')
 const ConnectionDB = require("./database");
@@ -25,6 +25,8 @@ app.use(bodyParser.json())
 app.use('/api/predict', require('./routes/predict'))
 app.use('/api/predict_gemini', require('./routes/gemini'))
 
+app.use('/api/v1/user', require('./routes/user'))
+app.use('/api/v1/teacher', require('./routes/teacher'))
 app.use('/api/v1/video', require('./routes/videopredictions'))
 app.use('/api/v1/text', require('./routes/textpredictions'))
 app.use('/api/v1/audio', require('./routes/audiopredictions'))

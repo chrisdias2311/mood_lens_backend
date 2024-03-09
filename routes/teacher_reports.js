@@ -68,29 +68,35 @@ async function getSampleTimeStampsReport(timestamps, sampleTimeStampsReportForma
   
     I want you to analyze tha time stamps and prepare a detailed timeline feedback report for the teacher. I would need the report in a JSON format and this is how the format of the report should be: 
     ${sampleTimeStampsReportFormat}
-  
-    `;
+
+    Please do not include any special characters to beautify the response.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
 
-    // **Remove all special characters except full stop and comma**
-    let cleanedResponse = response.text()
-        .replace(/[^\s.,]/g) // Remove most special characters, keep letters, numbers, space, comma, and full stop
-        .replace(/\s+/g, " ") // Replace multiple spaces with single space
-        .trim(); // Remove leading/trailing whitespace
+    console.log(response.text());
 
+
+    const lectureSummary = JSON.parse(response.text())["Lecture Emotions Summary"];
+    const teacherRecommendations = JSON.parse(response.text())["Recommendations for the Teacher"];
+
+    return { lectureSummary, teacherRecommendations}
+
+  
+    // **Remove special characters (consider potential downsides)**
+    // let cleanedResponse = response.text().replace(/^L[^a-zA-Z0-9\s.,!@#$%^&*()]*/g, "") // Remove 'L' at the beginning and other special characters
+
+  
     // **Handle potential non-JSON output**
-    let timeStampsReport;
-    try {
-        timeStampsReport = JSON.parse(cleanedResponse);
-    } catch (error) {
-        console.error("Error parsing response as JSON:", error);
-        console.error("Problematic response snippet:", cleanedResponse.substring(0, 100)); // Log a snippet
-        // Handle the error here (consider returning a partial report or default report)
-    }
-
-    return timeStampsReport;
+    // let timeStampsReport;
+    // try {
+    //   timeStampsReport = JSON.parse(response.text());
+    // } catch (error) {
+    //   console.error("Error parsing response as JSON:", error);
+    //   // Handle the error here, potentially return a default report or throw a new error
+    // }
+  
+    // return timeStampsReport;
 }
 
 
@@ -137,7 +143,6 @@ async function findMeetingTimestampsByMeetId(meetId) {
 
 
 const sampleTimeStampsReportFormat = `{
-    "Lecture Emotions Summary": "This report provides a summary of the students’ emotional responses during your recent lecture. The emotions tracked were: Happy, Confused, Surprised, Bored, and Person Not Found (PNF).
     The lecture started on a positive note with most students exhibiting a Happy emotion. As the lecture progressed, some students started to show signs of being Bored. This could be due to a variety of factors such as the complexity of the topic, pace of the lecture, or lack of interactive elements to keep the students engaged.
     Towards the end of the lecture, the students’ emotions shifted back to Happy. This could indicate that the concluding part of your lecture was effective in recapturing the students’ interest.
     Throughout the lecture, there were instances of Confused and Surprised emotions. These could be points in the lecture where the material was either not clear or unexpected for the students. The Person Not Found (PNF) instances could indicate times when a student was not present in front of their device.", 

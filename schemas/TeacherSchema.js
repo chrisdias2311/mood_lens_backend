@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-const userSchema = mongoose.Schema({
-    pid: {
-        type: Number,
+const teacherSchema = mongoose.Schema({
+    host_id: {
+        type: String,
         required: true,
         unique: true
     },
@@ -14,11 +14,7 @@ const userSchema = mongoose.Schema({
     password: {
         type: String,
         required: true
-    },
-    disability: {
-        type: String,
-        required: false,
     }
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('Teacher', teacherSchema);
