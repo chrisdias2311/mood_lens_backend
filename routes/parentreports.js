@@ -70,9 +70,9 @@ router.post('/get_meeting_timestamps', async (req, res) => {
         const { meet_id } = req.body; // Extract meet_id from request body
 
         // Find all entries with the provided meet_id
-        const timestamps = await MeetingTimestamp.find({ meet_id: meet_id });
+        const data = await MeetingTimestamp.find({ meet_id: meet_id });
 
-        res.json({timestamps }); // Send response as JSON
+        res.json({timestamps_data }); // Send response as JSON
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(400).json({ error: error.message });
