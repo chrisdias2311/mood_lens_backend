@@ -18,6 +18,7 @@ router.post("/signup", async (req, res) => {
                 const newTeacher = new Teacher({
                     host_id: req.body.host_id,
                     email: req.body.email,
+                    name: req.body.name,
                     password: hash
                 });
 

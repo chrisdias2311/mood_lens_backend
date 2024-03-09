@@ -17,7 +17,7 @@ const genAI = new GoogleGenerativeAI("AIzaSyB0TW1vcbeM8a56Uo8GT0TBriUZgDCfwdE");
 
 
 
-
+// Will give the list of meetings that a particular teacher has conducted 
 router.post("/meetings", async (req, res) => {
     try {
         const reports = await MeetingReport.find({ host_id: req.body.host_id });

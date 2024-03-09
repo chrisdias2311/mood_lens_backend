@@ -73,6 +73,7 @@ async function textToEmotion(studentPID, message) {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const emotion = response.text();
+    console.log("the emotion is: ", emotion)
     // return { studentPID, message, emotion };
     return emotion;
 }
@@ -105,6 +106,7 @@ router.post('/text_to_emotion', async (req, res) => {
 
     } catch (error) {
         res.status(400).json({ error: error.message }); // Send error as JSON
+        console.error(error); // Log the error to the console
     }
 });
 
