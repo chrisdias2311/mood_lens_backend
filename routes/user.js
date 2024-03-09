@@ -19,7 +19,7 @@ const mongoose = require('mongoose');
 router.post("/signup", async (req, res) => {
     const saltRounds = 10;
     try {
-        const user = await User.findOne({ PID: req.body.PID });
+        const user = await User.findOne({ pid: req.body.pid });
         if (user) return res.status(400).send("Account already exists");
 
         // bcrypt encryption
