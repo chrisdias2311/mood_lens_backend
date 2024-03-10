@@ -6,7 +6,7 @@ const axios = require("axios");
 const fs = require("fs");
 const sharp = require("sharp");
 const https = require("https");
-
+const mongoose = require('mongoose');
 const MeetingReport = require("../schemas/MeetingReportsSchema");
 const MeetingTimestamp = require("../schemas/MeetingTimestampsSchema");
 const StudentReport = require("../schemas/StudentReportSchema");
@@ -86,6 +86,7 @@ router.post('/get_meeting_timestamps', async (req, res) => {
             if (!timestamps_map.has(modeType)) {
                 // If a modeType is not present, add an empty entry for it
                 timestamps_data.push({
+                    _id: mongoose.Types.ObjectId(),
                     meet_id: meet_id,
                     modeType: modeType,
                     timestamps: []
