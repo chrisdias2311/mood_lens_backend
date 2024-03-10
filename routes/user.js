@@ -79,7 +79,6 @@ const mongoose = require('mongoose');
 //     }
 // });
 
-
 router.post("/face_id_signup", async (req, res) => {
     try {
         // Extract user details from request body
@@ -89,10 +88,13 @@ router.post("/face_id_signup", async (req, res) => {
             return res.status(400).send("Missing user details in request body");
         }
   
+        // Convert userName to lowercase
+        const lowerCaseUsername = userName.toLowerCase();
+
         // Create a new user
         const user = new User({
             pid: pid,
-            userName: userName,
+            userName: lowerCaseUsername,
             name: name,
             face_id: face_id,
             disability: disability,
@@ -110,8 +112,6 @@ router.post("/face_id_signup", async (req, res) => {
     }
 });
 
-
-
 router.post("/face_id_login", async (req, res) => {
     try {
         // Extract image URL and username from request body
@@ -121,8 +121,11 @@ router.post("/face_id_login", async (req, res) => {
             return res.status(400).send("Missing image URL or username in request body");
         }
 
+        // Convert username to lowercase
+        const lowerCaseUsername = username.toLowerCase();
+
         // Find the user with the given username
-        const user = await User.findOne({ userName: username });
+        const user = await User.findOne({ userName: lowerCaseUsername });
         if (!user) {
             return res.status(404).send("User not found");
         }
@@ -142,6 +145,7 @@ router.post("/face_id_login", async (req, res) => {
         res.status(500).send("Internal server error");
     }
 });
+
 
 router.post("/login", async (req, res) => {
     try {
