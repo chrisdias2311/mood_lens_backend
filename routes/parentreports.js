@@ -69,8 +69,29 @@ router.post('/get_meeting_timestamps', async (req, res) => {
     try {
         const { meet_id } = req.body; // Extract meet_id from request body
 
+        // Define all possible modeTypes
+        const modeTypes = ["video", "audio", "text"];
+
         // Find all entries with the provided meet_id
-        const timestamps_data = await MeetingTimestamp.find({ meet_id: meet_id });
+        let timestamps_data = await MeetingTimestamp.find({ meet_id: meet_id });
+
+        // Convert timestamps_data to a map for easy access
+        const timestamps_map = new Map();
+        timestamps_data.forEach((data) => {
+            timestamps_map.set(data.modeType, data);
+        });
+
+        // Ensure all modeTypes are present in the response
+        modeTypes.forEach((modeType) => {
+            if (!timestamps_map.has(modeType)) {
+                // If a modeType is not present, add an empty entry for it
+                timestamps_data.push({
+                    meet_id: meet_id,
+                    modeType: modeType,
+                    timestamps: []
+                });
+            }
+        });
 
         res.json({timestamps_data }); // Send response as JSON
     } catch (error) {
@@ -78,6 +99,7 @@ router.post('/get_meeting_timestamps', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+
 
 
 
