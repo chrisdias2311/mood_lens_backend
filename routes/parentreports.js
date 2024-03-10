@@ -10,6 +10,12 @@ const mongoose = require('mongoose');
 const MeetingReport = require("../schemas/MeetingReportsSchema");
 const MeetingTimestamp = require("../schemas/MeetingTimestampsSchema");
 const StudentReport = require("../schemas/StudentReportSchema");
+const User = require("../schemas/UserSchema");
+
+
+const genAI = new GoogleGenerativeAI("AIzaSyCTYERXkGoRT7Vh1jiyzfcVVyxT-2rL-2M");
+
+
 
 router.post('/meetings', async (req, res) => {
     try {
@@ -102,6 +108,42 @@ router.post('/get_meeting_timestamps', async (req, res) => {
     }
 });
 
+
+
+
+
+
+async function generateConclusion(disability, meetReport, studentReport) {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    console.log("Reached here")
+    const prompt = `Given the student's emotional report during the meeting as ${JSON.stringify(studentReport)}, and the overall emotional report of the meeting as ${JSON.stringify(meetReport)}, generate a conclusion paragraph for the student's parents. Consider the student's disability carefully while providing the conclusion. If the student's emotions were decent in the call, it's a good thing. If the student's emotions were not so good and the emotions of the entire class were of similar kind, then probably the teacher needs to improve. If the student's emotions were not so good but the rest of the students from the class were OK, provide positive words to improve.`;
+
+    const result = await model.generateContent(prompt);
+    console.log("Result", result);
+    const response = await result.response;
+    const conclusion = response.text();
+    console.log("Conclusion", conclusion);
+    return conclusion;
+}
+
+router.post('/generate_conclusion', async (req, res) => {
+    try {
+        const { meet_id, student_id } = req.body;
+
+        const user = await User.findOne({ pid: student_id });
+        const meetReport = await MeetingReport.findOne({ meet_id: meet_id });
+        const studentReport = await StudentReport.findOne({ meet_id: meet_id, student_id: student_id });
+
+        if (!user || !meetReport || !studentReport) throw new Error("User or report not found.");
+
+        const conclusion = await generateConclusion(user.disability, meetReport, studentReport);
+
+        res.json({ conclusion: conclusion });
+
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 
 
