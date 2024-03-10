@@ -89,7 +89,8 @@ router.post('/get_meeting_timestamps', async (req, res) => {
                     _id: mongoose.Types.ObjectId(),
                     meet_id: meet_id,
                     modeType: modeType,
-                    timestamps: []
+                    timestamps: [],
+                    __v: 1
                 });
             }
         });
