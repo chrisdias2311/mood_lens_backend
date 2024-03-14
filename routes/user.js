@@ -79,47 +79,87 @@ const mongoose = require('mongoose');
 //     }
 // });
 
-router.post("/face_id_signup", async (req, res) => {
-    try {
-        // Extract user details from request body
-        const { pid, userName, name, face_id, disability, phone } = req.body;
-  
-        if (!pid || !userName || !phone) {
-            return res.status(400).send("Missing user details in request body");
-        }
-  
-        // Convert userName to lowercase
-        const lowerCaseUsername = userName.toLowerCase();
 
-        // Create a new user
-        const user = new User({
-            pid: pid,
-            userName: lowerCaseUsername,
-            name: name,
-            face_id: face_id,
-            disability: disability,
-            phone: phone
+// router.post("/face_id_signup", async (req, res) => {
+//     try {
+//         // Extract user details from request body
+//         const { pid, userName, name, face_id, disability, phone } = req.body;
+  
+//         if (!pid || !userName || !phone) {
+//             return res.status(400).send("Missing user details in request body");
+//         }
+  
+//         // Convert userName to lowercase
+//         const lowerCaseUsername = userName.toLowerCase();
+
+//         // Create a new user
+//         const user = new User({
+//             pid: pid,
+//             userName: lowerCaseUsername,
+//             name: name,
+//             face_id: face_id,
+//             disability: disability,
+//             phone: phone
+//         });
+  
+//         // Save the user to the database
+//         const savedUser = await user.save();
+  
+//         // Return success response with user information
+//         res.status(200).json({ user: savedUser });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send("Internal server error");
+//     }
+// });
+
+
+router.post("/signup", async (req, res) => {
+    const saltRounds = 10;
+    try {
+        const user = await User.findOne({ pid: req.body.pid });
+        if (user) return res.status(400).json({ message: "Account already exists", user: null });
+
+        // bcrypt encryption
+        bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ message: 'Error generating hash', user: null });
+            } else {
+                const newUser = new User({
+                    pid: req.body.pid,
+                    userName: req.body.userName.toLowerCase(),
+                    name: req.body.name,
+                    face_id: req.body.face_id,
+                    disability: req.body.disability,
+                    phone: req.body.phone,
+                    email: req.body.email,
+                    password: hash
+                });
+
+                // save user here
+                newUser.save()
+                    .then(() => {
+                        console.log('User created');
+                        res.status(200).json({ message: 'User created successfully', user: newUser });
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        res.status(500).json({ message: 'Error creating user', user: null });
+                    });
+            }
         });
-  
-        // Save the user to the database
-        const savedUser = await user.save();
-  
-        // Return success response with user information
-        res.status(200).json({ user: savedUser });
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal server error");
+        console.log(error);
+        res.status(500).json({ message: 'Server error', user: null });
     }
 });
 
-router.post("/face_id_login", async (req, res) => {
-    try {
-        // Extract image URL and username from request body
-        const { imageUrl, username } = req.body;
 
-        if (!imageUrl || !username) {
-            return res.status(400).send("Missing image URL or username in request body");
-        }
+router.post("/login", async (req, res) => {
+    try {
+        // Extract image URL, username and password from request body
+        const { imageUrl, username, password } = req.body;
 
         // Convert username to lowercase
         const lowerCaseUsername = username.toLowerCase();
@@ -130,16 +170,31 @@ router.post("/face_id_login", async (req, res) => {
             return res.status(404).send("User not found");
         }
 
-        // Call compareImages function to compare the images
-        const similarity = await compareImages(imageUrl, user.face_id);
-
-        // If the images are similar, return the user information
-        if (similarity === "yes") {
-            return res.status(200).json({ user });
+        // If imageUrl is provided, use face ID for authentication
+        if (imageUrl) {
+            const similarity = await compareImages(imageUrl, user.face_id);
+            if (similarity === "yes") {
+                return res.status(200).json({ message: "Face ID matched", user });
+            } else {
+                return res.status(200).json({ message: "Face ID does not match" });
+            }
         }
 
-        // If the images are not similar, return a response indicating so
-        res.status(200).json({ message: "Face ID do not match" });
+        // If password is provided, use password for authentication
+        if (password) {
+            bcrypt.compare(password, user.password, function(err, result) {
+                if (result == true) {
+                    return res.status(200).json({ message: "Logged In Successfully", user });
+                } else {
+                    return res.status(200).json({ message: "Incorrect password" });
+                }
+            });
+        }
+
+        // If neither imageUrl nor password is provided, return an error
+        if (!imageUrl && !password) {
+            return res.status(400).send("Missing image URL or password in request body");
+        }
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal server error");
@@ -147,28 +202,29 @@ router.post("/face_id_login", async (req, res) => {
 });
 
 
-router.post("/login", async (req, res) => {
-    try {
-        // Extract username and pid from request body
-        const { username, pid } = req.body;
 
-        if (!username || !pid) {
-            return res.status(400).send("Missing username or pid in request body");
-        }
+// router.post("/login", async (req, res) => {
+//     try {
+//         // Extract username and pid from request body
+//         const { username, pid } = req.body;
 
-        // Find the user with the given username and pid
-        const user = await User.findOne({ userName: username, pid: pid });
-        if (!user) {
-            return res.status(404).send("User not found");
-        }
+//         if (!username || !pid) {
+//             return res.status(400).send("Missing username or pid in request body");
+//         }
 
-        // If the user is found, return the user information
-        res.status(200).json({ user });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal server error");
-    }
-});
+//         // Find the user with the given username and pid
+//         const user = await User.findOne({ userName: username, pid: pid });
+//         if (!user) {
+//             return res.status(404).send("User not found");
+//         }
+
+//         // If the user is found, return the user information
+//         res.status(200).json({ user });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send("Internal server error");
+//     }
+// });
 
 
 
