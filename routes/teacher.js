@@ -6,19 +6,20 @@ const bcrypt = require('bcrypt');
 router.post("/signup", async (req, res) => {
     const saltRounds = 10;
     try {
-        const teacher = await Teacher.findOne({ host_id: req.body.host_id });
-        if (teacher) return res.status(400).send("Account already exists");
+        const teacher = await Teacher.findOne({ hostId: req.body.hostId });
+        if (teacher) return res.status(400).json({ message: "Account already exists", teacher: null });
 
         // bcrypt encryption
         bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
             if (err) {
                 console.log(err);
-                res.status(500).send('Error generating hash');
+                return res.status(500).json({ message: 'Error generating hash', teacher: null });
             } else {
                 const newTeacher = new Teacher({
-                    host_id: req.body.host_id,
+                    hostId: req.body.hostId,
                     email: req.body.email,
-                    name: req.body.name,
+                    userName: req.body.userName.toLowerCase(),
+                    phone: req.body.phone,
                     password: hash
                 });
 
@@ -26,44 +27,56 @@ router.post("/signup", async (req, res) => {
                 newTeacher.save()
                     .then(() => {
                         console.log('Teacher created');
-                        res.status(200).send(newTeacher);
+                        res.status(200).json({ message: 'Account created successfully', teacher: newTeacher });
                     })
                     .catch((err) => {
                         console.log(err);
-                        res.status(500).send('Error saving teacher');
+                        res.status(500).json({ message: 'Failed to create account', teacher: null });
                     });
             }
         });
     } catch (error) {
         console.log(error);
-        res.status(500).send('Server error');
+        res.status(500).json({ message: 'Server error', teacher: null });
     }
 });
 
 
 router.post("/login", async (req, res) => {
     try {
-        // find teacher by host_id or email
-        const teacher = await Teacher.findOne({ $or: [{ host_id: req.body.host_id }, { email: req.body.email }] });
-        if (!teacher) return res.status(400).send("Account does not exist");
+        // Extract username and password from request body
+        const { username, password } = req.body;
 
-        // bcrypt password comparison
-        bcrypt.compare(req.body.password, teacher.password, (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send('Error comparing passwords');
-            } else if (result) {
-                console.log('Teacher logged in');
-                res.status(200).send(teacher);
-            } else {
-                res.status(400).send('Incorrect password');
-            }
-        });
+        // Convert username to lowercase
+        const lowerCaseUsername = req.body.userName.toLowerCase();
+
+        // Find the teacher with the given username
+        const teacher = await Teacher.findOne({ userName: lowerCaseUsername });
+        if (!teacher) {
+            return res.status(404).json({ message: "Teacher not found", teacher: null });
+        }
+
+        // If password is provided, use password for authentication
+        if (password) {
+            bcrypt.compare(password, teacher.password, function(err, result) {
+                if (result == true) {
+                    return res.status(200).json({ message: "Logged in successfully", teacher });
+                } else {
+                    return res.status(200).json({ message: "Incorrect password", teacher: null });
+                }
+            });
+        }
+
+        // If password is not provided, return an error
+        if (!password) {
+            return res.status(400).send("Missing password in request body");
+        }
     } catch (error) {
-        console.log(error);
-        res.status(500).send('Server error');
+        console.error(error);
+        res.status(500).json({ message: 'Server error', teacher: null });
     }
 });
+
 
 module.exports = router;
 

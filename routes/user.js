@@ -129,7 +129,6 @@ router.post("/signup", async (req, res) => {
                 const newUser = new User({
                     pid: req.body.pid,
                     userName: req.body.userName.toLowerCase(),
-                    name: req.body.name,
                     face_id: req.body.face_id,
                     disability: req.body.disability,
                     phone: req.body.phone,
