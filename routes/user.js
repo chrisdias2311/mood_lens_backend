@@ -114,11 +114,21 @@ const mongoose = require('mongoose');
 // });
 
 
+
 router.post("/signup", async (req, res) => {
     const saltRounds = 10;
     try {
-        const user = await User.findOne({ pid: req.body.pid });
-        if (user) return res.status(400).json({ message: "Account already exists", user: null });
+        const { pid, userName, email } = req.body;
+
+        // Check if a user with the same pid, username, or email already exists
+        const existingUser = await User.findOne({ $or: [{ pid: pid }, { userName: userName.toLowerCase() }, { email: email }] });
+        if (existingUser) {
+            let message = 'Account already exists with the same ';
+            if (existingUser.pid === pid) message += 'PID';
+            else if (existingUser.userName === userName.toLowerCase()) message += 'username';
+            else if (existingUser.email === email) message += 'email';
+            return res.status(400).json({ message: message, user: null });
+        }
 
         // bcrypt encryption
         bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
@@ -127,12 +137,12 @@ router.post("/signup", async (req, res) => {
                 return res.status(500).json({ message: 'Error generating hash', user: null });
             } else {
                 const newUser = new User({
-                    pid: req.body.pid,
-                    userName: req.body.userName.toLowerCase(),
+                    pid: pid,
+                    userName: userName.toLowerCase(),
                     face_id: req.body.face_id,
                     disability: req.body.disability,
                     phone: req.body.phone,
-                    email: req.body.email,
+                    email: email,
                     password: hash
                 });
 
@@ -153,6 +163,7 @@ router.post("/signup", async (req, res) => {
         res.status(500).json({ message: 'Server error', user: null });
     }
 });
+
 
 
 router.post("/login", async (req, res) => {
