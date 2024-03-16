@@ -10,6 +10,7 @@ const https = require("https");
 const MeetingReport = require("../schemas/MeetingReportsSchema");
 const MeetingTimestamp = require("../schemas/MeetingTimestampsSchema");
 const StudentReport = require("../schemas/StudentReportSchema");
+const User = require("../schemas/UserSchema");
 const { update } = require('../schemas/UserSchema');
 
 
@@ -107,7 +108,8 @@ router.post('/video_to_emotion', async (req, res) => {
         // Create a new MeetingTimestamp in the database
         // createMeetingTimestamp(meet_id, host_id, time_stamp, emotionCounts);     // Do not add await here, function is not critical to the response hence can be executed asynchronously to save response time 
         console.log(updatedMeetReports);
-        res.json({ updatedMeetReports }); // Send response as JSON
+        const studentLiveEmotions = await getStudentLiveEmotions(meet_id);
+        res.json({ updatedMeetReports, studentLiveEmotions }); // Send response as JSON
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(400).json({ error: error.message });
@@ -127,6 +129,24 @@ router.get('/video_timestamps/:meet_id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+
+// router.post('/get_student_live_analytics', async (req, res) => {
+//     try {
+//         const { meet_id } = req.body; // Extract meet_id, host_id, and imgUrls from request body
+//         // if (!Array.isArray(imgUrls)) {
+//         //     throw new Error("imgUrls should be an array.");
+//         // }
+
+//         const studentLiveEmotions = await getStudentLiveEmotions(meet_id);
+        
+//         res.json({ studentLiveEmotions });
+
+//     } catch (error) {
+//         console.error(error); // Log the error to the console
+//         res.status(400).json({ error: error.message });
+//     }
+// });
 
 
 
@@ -289,6 +309,166 @@ async function createMeetingTimestamp(meet_id, host_id, timeStamp, emotionCounts
     // Save the updated MeetingTimestamp
     await meetingTimestamp.save();
 }
+
+
+async function getStudentLiveEmotions(meet_id) {
+    // Get all students where meet_id = meet_id
+    const studentReports = await StudentReport.find({ meet_id: meet_id }).lean();
+
+    // Process the students list
+    const studentLiveEmotions = await Promise.all(studentReports.map(async (report) => {
+        // Find the student's username
+        const user = await User.findOne({ pid: report.student_id }).lean();
+        const username = user ? user.userName : null;
+
+        // Create an object for each student
+        const studentEmotion = {
+            student_id: report.student_id,
+            username: username,
+            text_emotion: getMaxEmotion(report.text_emotions),
+            video_emotion: getMaxEmotion(report.video_emotions),
+            audio_emotion: getMaxEmotion(report.audio_emotions)
+        };
+
+        // Calculate the overall emotion
+        const allEmotions = [...report.text_emotions, ...report.video_emotions, ...report.audio_emotions];
+        studentEmotion.overall_emotion = getMaxEmotion(allEmotions);
+
+        return studentEmotion;
+    }));
+
+    return studentLiveEmotions;
+}
+
+
+
+
+
+function getMaxEmotion(emotionsArray) {
+    let maxEmotion = "";
+    let maxValue = 0;
+    let nonZeroValuesExist = false;
+
+    // Iterate over all objects in the array
+    for (const emotions of emotionsArray) {
+        for (const emotion in emotions) {
+            if (emotions[emotion] !== 0) {
+                nonZeroValuesExist = true;
+                if (emotions[emotion] > maxValue) {
+                    maxEmotion = emotion;
+                    maxValue = emotions[emotion];
+                }
+            }
+        }
+    }
+
+    return nonZeroValuesExist ? maxEmotion : ""; // Return empty string if all values are 0
+}
+
+
+function getFinalMaxEmotions(emotionTypesArray) {
+    let maxEmotion = "";
+    let maxValue = 0;
+    let nonZeroValuesExist = false;
+
+    // Iterate over all objects in the array
+    for(const emotionsArray of emotionTypesArray) {
+        for (const emotions of emotionsArray) {
+            for (const emotion in emotions) {
+                if (emotions[emotion] !== 0) {
+                    nonZeroValuesExist = true;
+                    if (emotions[emotion] > maxValue) {
+                        maxEmotion = emotion;
+                        maxValue = emotions[emotion];
+                    }
+                }
+            }
+        }
+    }
+    // for (const emotions of emotionsArray) {
+    //     for (const emotion in emotions) {
+    //         if (emotions[emotion] !== 0) {
+    //             nonZeroValuesExist = true;
+    //             if (emotions[emotion] > maxValue) {
+    //                 maxEmotion = emotion;
+    //                 maxValue = emotions[emotion];
+    //             }
+    //         }
+    //     }
+    // }
+
+    return nonZeroValuesExist ? maxEmotion : ""; // Return empty string if all values are 0
+}
+
+
+
+
+
+
+
+// async function getStudentLiveEmotions(meet_id) {
+//     try {
+//         // Find all students with the given meet_id
+//         const students = await StudentReport.find({ meet_id });
+
+//         // Array to store final results
+//         const studentLiveEmotions = [];
+
+//         // Iterate through each student
+//         for (const student of students) {
+//             // Extract student_id
+//             const { student_id } = student;
+
+//             // Fetch username from User schema using student_id
+//             const user = await User.findOne({ pid: student_id });
+//             const username = user ? user.userName : 'Unknown';
+
+//             // Calculate max emotion for text_emotions
+//             const text_emotion_max = getMaxEmotion(student.text_emotions);
+
+//             // Calculate max emotion for video_emotions
+//             const video_emotion_max = getMaxEmotion(student.video_emotions);
+
+//             // Calculate max emotion for audio_emotions
+//             const audio_emotion_max = getMaxEmotion(student.audio_emotions);
+
+//             // Construct the object for this student
+//             const studentEmotion = {
+//                 student_id,
+//                 username,
+//                 text_emotion: text_emotion_max,
+//                 video_emotion: video_emotion_max,
+//                 audio_emotion: audio_emotion_max
+//             };
+
+//             // Push the student's emotion object to the final array
+//             studentLiveEmotions.push(studentEmotion);
+//         }
+
+//         return studentLiveEmotions;
+//     } catch (error) {
+//         throw error;
+//     }
+// }
+
+// // Helper function to get the max emotion from an array of emotions
+// // Helper function to get the max emotion from an array of emotions
+// function getMaxEmotion(emotions) {
+//     let maxEmotion = '';
+//     let maxValue = 0;
+
+//     emotions.forEach(emotion => {
+//         for (const [key, value] of Object.entries(emotion)) {
+//             console.log("Key: ", key, "Value: ", value)
+//             if (key !== 'pnf' && value > maxValue) {
+//                 maxEmotion = key;
+//                 maxValue = value;
+//             }
+//         }
+//     });
+
+//     return maxEmotion;
+// }
 
 
 
