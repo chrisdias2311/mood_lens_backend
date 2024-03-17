@@ -108,8 +108,16 @@ router.post('/video_to_emotion', async (req, res) => {
         // Create a new MeetingTimestamp in the database
         // createMeetingTimestamp(meet_id, host_id, time_stamp, emotionCounts);     // Do not add await here, function is not critical to the response hence can be executed asynchronously to save response time 
         console.log(updatedMeetReports);
+        const overallEmotions = {
+            "happy": updatedMeetReports.text_emotions[0].happy + updatedMeetReports.video_emotions[0].happy + updatedMeetReports.audio_emotions[0].happy,
+            "surprised": updatedMeetReports.text_emotions[0].surprised + updatedMeetReports.video_emotions[0].surprised + updatedMeetReports.audio_emotions[0].surprised,
+            "confused": updatedMeetReports.text_emotions[0].confused + updatedMeetReports.video_emotions[0].confused + updatedMeetReports.audio_emotions[0].confused,
+            "bored": updatedMeetReports.text_emotions[0].bored + updatedMeetReports.video_emotions[0].bored + updatedMeetReports.audio_emotions[0].bored,
+            "pnf": updatedMeetReports.text_emotions[0].pnf + updatedMeetReports.video_emotions[0].pnf + updatedMeetReports.audio_emotions[0].pnf
+        };
+
         const studentLiveEmotions = await getStudentLiveEmotions(meet_id);
-        res.json({ updatedMeetReports, studentLiveEmotions }); // Send response as JSON
+        res.json({ updatedMeetReports, overallEmotions, studentLiveEmotions }); // Send response as JSON
     } catch (error) {
         console.error(error); // Log the error to the console
         res.status(400).json({ error: error.message });
@@ -188,11 +196,6 @@ async function ImagesToEmotions(meet_id, host_id, imgUrls, time_stamp) {
     createMeetingTimestamp(meet_id, host_id, time_stamp, emotionCounts); 
     return finalMeetingReport;
 }
-
-
-
-
-
 
 
 async function updateStudentReport(meet_id, studentPID, emotion) {
