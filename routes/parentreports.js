@@ -16,6 +16,28 @@ const User = require("../schemas/UserSchema");
 const genAI = new GoogleGenerativeAI("AIzaSyCTYERXkGoRT7Vh1jiyzfcVVyxT-2rL-2M");
 
 
+router.post("/login", async (req, res) => {
+    try {
+        // Extract username and pid from request body
+        const { username, pid } = req.body;
+
+        if (!username || !pid) {
+            return res.status(400).send("Missing username or pid in request body");
+        }
+
+        // Find the user with the given username and pid
+        const user = await User.findOne({ userName: username, pid: pid });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // If the user is found, return the user information
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+    }
+});
 
 router.post('/meetings', async (req, res) => {
     try {
