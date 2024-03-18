@@ -177,7 +177,7 @@ router.post("/login", async (req, res) => {
         // Find the user with the given username
         const user = await User.findOne({ userName: lowerCaseUsername });
         if (!user) {
-            return res.status(404).send("User not found");
+            return res.status(200).send("User not found");
         }
 
         // If imageUrl is provided, use face ID for authentication
