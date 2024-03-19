@@ -34,7 +34,7 @@ router.post("/create_meeting", async (req, res) => {
             title: req.body.title,
             description: req.body.description,
             startTime: req.body.startTime,
-            endTime: req.body.endTime,
+            endTime: "",
             host_name: req.body.host_name
         });
 
@@ -52,6 +52,46 @@ router.post("/create_meeting", async (req, res) => {
 function generateRandomCode() {
     return Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
 }
+
+
+
+router.post('/join_meeting', async (req, res) => {
+    try {
+        const meeting = await MeetingReport.findOne({ meet_id: req.body.meet_id });
+        if (!meeting) {
+            return res.status(400).json({ message: 'Meeting not found' });
+        }
+
+        if (meeting.endTime === '') {
+            return res.status(200).json({ message: 'The meeting is currently happening' });
+        } else {
+            return res.status(400).json({ message: 'The meeting has ended' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server error' });
+    }
+});
+
+router.post('/end_meeting', async (req, res) => {
+    try {
+        const { meet_id, endTime } = req.body;
+        const meeting = await MeetingReport.findOne({ meet_id: meet_id });
+        if (!meeting) {
+            return res.status(400).json({ message: 'Meeting not found' });
+        }
+
+        meeting.endTime = endTime;
+        await meeting.save();
+
+        return res.json({ message: 'Meeting ended successfully', meeting });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 
 
 module.exports = router;
