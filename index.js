@@ -34,6 +34,7 @@ app.use('/api/v1/audio', require('./routes/audiopredictions'))
 
 app.use('/api/v1/teacher_reports', require('./routes/teacher_reports'))
 app.use('/api/v1/student_reports', require('./routes/parentreports'))
+app.use('/api/v1/notes', require('./routes/notes'))
 
 
 
