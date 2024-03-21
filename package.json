@@ -27,6 +27,7 @@
     "multer-gridfs-storage": "^5.0.2",
     "nodemon": "^2.0.19",
     "python-shell": "^5.0.0",
-    "sharp": "^0.33.2"
+    "sharp": "^0.33.2",
+    "twilio": "^5.0.1"
   }
 }

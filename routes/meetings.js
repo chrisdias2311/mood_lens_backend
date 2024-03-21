@@ -11,6 +11,54 @@ const MeetingReport = require("../schemas/MeetingReportsSchema");
 const MeetingTimestamp = require("../schemas/MeetingTimestampsSchema");
 const StudentReport = require("../schemas/StudentReportSchema");
 
+// const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+
+//Chris's account
+const accountSid = 'AC556c5f29a1a095c7798a52f873c90836';
+const authToken = 'c1dd61de8ad045e63ed630379cf4c892';
+
+
+const client = require('twilio')(accountSid, authToken);
+
+function sendWhatsappMessage(teacherName, topic, code) {
+    const msg = `Hello *Chris*,
+*${teacherName}* has recently scheduled a new meeting for your upcoming lecture on ${topic}. To join the lecture, please use the code *${code}* or click on the provided link below.
+
+Meeting Link: https://moodlensclient.web.app/room/${code}
+
+Happy learning!`
+
+    client.messages
+        .create({
+            body: msg,
+            from: 'whatsapp:+14155238886',
+            to: 'whatsapp:+919637261594'
+        })
+        .then(message => console.log(message.sid));
+}
+
+router.get('/fire', async (req, res) => {
+    try {
+        // Call the sendWhatsappMessage function
+        sendWhatsappMessage('Mustafiz', 'AI', '8132');
+
+        res.status(200).json("Successfully fired SOS!")
+    } catch (err) {
+        console.log("The err", err.message)
+        res.status(500).json(err.message);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
 
 
 router.post("/create_meeting", async (req, res) => {
@@ -41,6 +89,14 @@ router.post("/create_meeting", async (req, res) => {
         // Save the new meeting to the database
         await newMeeting.save();
 
+        try {
+            // Call the sendWhatsappMessage function
+            sendWhatsappMessage(req.body.host_name, req.body.title, meet_id);
+            console.log("Successfully sent whatsapp message!")
+        } catch (err) {
+            console.log("The err", err.message)
+        }
+
         // Send the meet_id in the response
         res.json({ meet_id: meet_id });
     } catch (error) {
@@ -63,7 +119,7 @@ router.post('/join_meeting', async (req, res) => {
         }
 
         if (meeting.endTime === '') {
-            return res.status(200).json({ message: 'The meeting is currently happening', success: true});
+            return res.status(200).json({ message: 'The meeting is currently happening', success: true });
         } else {
             return res.status(200).json({ message: 'The meeting has ended', success: false });
         }
