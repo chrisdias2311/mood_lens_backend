@@ -7,6 +7,7 @@ const fs = require("fs");
 const sharp = require("sharp");
 const https = require("https");
 
+const User = require("../schemas/UserSchema");
 const MeetingReport = require("../schemas/MeetingReportsSchema");
 const MeetingTimestamp = require("../schemas/MeetingTimestampsSchema");
 const StudentReport = require("../schemas/StudentReportSchema");
@@ -80,10 +81,47 @@ async function textToEmotion(studentPID, message) {
 
 
 // POST request to analyze emotion from the provided message
+// router.post('/text_to_emotion', async (req, res) => {
+//     try {
+//         const { meet_id, host_id, studentPID, message, time_stamp } = req.body; // Extract studentPID and message from request body
+//         if (!meet_id || !host_id || !studentPID || !message) throw new Error("Student PID and message are required.");
+
+//         var emotion = await textToEmotion(studentPID, message);
+
+//         //Process the emotion (remove extra stuff from the string)
+//         const emotionArr = ["happy", "confused", "surprised", "bored"];
+//         const regex = new RegExp(emotionArr.join("|"), "i");
+//         emotion = emotion.trim().toLowerCase();
+//         const match = emotion.match(regex);
+
+//         if(match)  emotion = match[0];
+
+//         // Save the emotion to the database
+//         const meetReport = await updateMeetingReport(meet_id, host_id, emotion);
+//         updateStudentReport(meet_id, studentPID, emotion);
+//         await createMeetingTimestamp(meet_id, host_id, time_stamp, emotion);
+
+
+//         console.log(meetReport);
+//         res.json(meetReport); // Send response as JSON
+
+//     } catch (error) {
+//         res.status(400).json({ error: error.message }); // Send error as JSON
+//         console.error(error); // Log the error to the console
+//     }
+// });
+
 router.post('/text_to_emotion', async (req, res) => {
     try {
-        const { meet_id, host_id, studentPID, message, time_stamp } = req.body; // Extract studentPID and message from request body
-        if (!meet_id || !host_id || !studentPID || !message) throw new Error("Student PID and message are required.");
+        const { meet_id, host_id, username, message, time_stamp } = req.body; // Extract username and message from request body
+        if (!meet_id || !host_id || !username || !message) throw new Error("Username and message are required.");
+
+        // Find the user's document using the username
+        const user = await User.findOne({ userName: new RegExp(`^${username}$`, 'i') });
+        if (!user) throw new Error("User not found.");
+
+        // Extract the studentPID from the user's document
+        const studentPID = user.pid;
 
         var emotion = await textToEmotion(studentPID, message);
 
@@ -100,7 +138,6 @@ router.post('/text_to_emotion', async (req, res) => {
         updateStudentReport(meet_id, studentPID, emotion);
         await createMeetingTimestamp(meet_id, host_id, time_stamp, emotion);
 
-
         console.log(meetReport);
         res.json(meetReport); // Send response as JSON
 
@@ -109,6 +146,7 @@ router.post('/text_to_emotion', async (req, res) => {
         console.error(error); // Log the error to the console
     }
 });
+
 
 async function updateStudentReport(meet_id, studentPID, emotion) {
     // Check if the student report exists
