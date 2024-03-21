@@ -63,9 +63,9 @@ router.post('/join_meeting', async (req, res) => {
         }
 
         if (meeting.endTime === '') {
-            return res.status(200).json({ message: 'The meeting is currently happening' });
+            return res.status(200).json({ message: 'The meeting is currently happening', success: true});
         } else {
-            return res.status(400).json({ message: 'The meeting has ended' });
+            return res.status(200).json({ message: 'The meeting has ended', success: false });
         }
     } catch (err) {
         console.error(err);
