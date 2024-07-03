@@ -14,7 +14,7 @@ const e = require('express');
 const { timeStamp } = require('console');
 
 
-const genAI = new GoogleGenerativeAI("AIzaSyB0TW1vcbeM8a56Uo8GT0TBriUZgDCfwdE");
+const genAI = new GoogleGenerativeAI("AIzaSyAGbRvDFK9HwhytwYY9613KTZTfh94GWWo");
 
 
 

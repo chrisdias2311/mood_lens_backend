@@ -241,7 +241,7 @@ router.post("/login", async (req, res) => {
 
 
 // Access your API key as an environment variable (see "Set up your API key" above)
-const genAI = new GoogleGenerativeAI("AIzaSyB0TW1vcbeM8a56Uo8GT0TBriUZgDCfwdE");
+const genAI = new GoogleGenerativeAI("AIzaSyAGbRvDFK9HwhytwYY9613KTZTfh94GWWo");
 
 async function compareImages(imageUrl1, imageUrl2) {
     // Fetch image data asynchronously
