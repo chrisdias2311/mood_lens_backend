@@ -27,7 +27,7 @@ function imageDataToGenerativePart(data, mimeType) {
     };
 }
 async function ImageToEmotion(studentPID, imageUrl) {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `Analyze the following image and identify the student's most likely emotion: 
     if any of the following scenarios are seen in the image {
         Smiling, 

@@ -258,7 +258,7 @@ async function compareImages(imageUrl1, imageUrl2) {
     const imagePart2 = imageDataToGenerativePart(imageData2, "image/jpeg");
 
     // Use gemini-pro-vision model for multimodal input
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Prompt asking to compare the images
     const prompt = "Imagine that you are very Intelligent at matching faces. You will be given 2 images. You have to check if the person in buth the images is same or not. If the Person in both the images is same return yes. If you feel that any of the two Images is not real or the person in both the images is not the same person return No";
